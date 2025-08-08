@@ -34,12 +34,19 @@
                 <label for="filename">Output Filename:</label>
                 <input type="text" id="filename" placeholder="payload.vbs" value="payload.vbs">
             </div>
+            <div class="form-row">
+                <label for="vbs-file">Save Location:</label>
+                <div class="file-label">
+                    <input type="file" id="vbs-file-input" class="file-input" accept=".vbs" nwsaveas>
+                    <button class="btn btn-file" id="vbs-browse">Browse</button>
+                    <span class="file-name" id="vbs-file-name">No location selected</span>
+                </div>
+            </div>
         </div>
 
         <div class="btn-group">
             <button class="btn btn-secondary" id="generate-chr">Generate CHR Method</button>
             <button class="btn btn-accent" id="generate-b64">Generate Base64 Method</button>
-            <button class="btn btn-primary" id="download-btn">Download VBS File</button>
         </div>
 
         <div class="output">

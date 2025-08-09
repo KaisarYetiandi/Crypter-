@@ -9,32 +9,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const vbsBrowseBtn = document.getElementById('vbs-browse');
     const vbsFileName = document.getElementById('vbs-file-name');
     
-    // Improved file browsing that works on all devices
-    function setupFileInput() {
-        // For mobile devices, we need to trigger the click differently
-        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            // Mobile device detected
-            vbsBrowseBtn.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                vbsFileInput.click();
-            }, { passive: false });
-        } else {
-            // Desktop device
-            vbsBrowseBtn.addEventListener('click', () => {
-                vbsFileInput.click();
-            });
+    function handleFileBrowse() {
+        if (vbsFileInput) {
+            vbsFileInput.click();
         }
-        
-        vbsFileInput.addEventListener('change', () => {
-            if (vbsFileInput.files.length > 0) {
-                vbsFileName.textContent = vbsFileInput.files[0].name;
-            } else {
-                vbsFileName.textContent = 'No file selected';
-            }
-        });
     }
-    
-    setupFileInput();
+
+    function handleFileChange() {
+        if (vbsFileInput.files.length > 0) {
+            vbsFileName.textContent = vbsFileInput.files[0].name;
+        } else {
+            vbsFileName.textContent = 'No file selected';
+        }
+    }
+
+    if (vbsBrowseBtn && vbsFileInput) {
+        vbsBrowseBtn.addEventListener('click', handleFileBrowse);
+        vbsBrowseBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleFileBrowse();
+        }, { passive: false });
+        
+        vbsFileInput.addEventListener('change', handleFileChange);
+    }
 
     function showModal(title, message, isError = false) {
         modalTitle.textContent = title;
@@ -43,16 +40,20 @@ document.addEventListener('DOMContentLoaded', function() {
         modalTitle.style.color = isError ? 'var(--danger)' : 'var(--secondary)';
     }
     
-    modalClose.addEventListener('click', () => modal.style.display = 'none');
-    modalOk.addEventListener('click', () => modal.style.display = 'none');
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+    
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modalOk) modalOk.addEventListener('click', closeModal);
     window.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
+        if (e.target === modal) closeModal();
     });
 
     function validateIpOrDomain(value) {
         const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
         const domainPattern = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/;
-        const ngrokPattern = /^[a-zA-Z0-9\-]+\.tcp\.([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,}$/;
+        const ngrokPattern = /^[a-zA-Z0-9\-]+\.tcp\.([a-zA-Z0-9\-]+\.)+[A-Za-z]{2,}$/;
         return ipPattern.test(value) || domainPattern.test(value) || ngrokPattern.test(value);
     }
     
@@ -92,8 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         URL.revokeObjectURL(url);
     }
     
-    // Tombol Generate CHR Method
-    document.getElementById('generate-chr').addEventListener('click', () => {
+    function generateChrMethod() {
         const ip = document.getElementById('ip').value.trim();
         const port = parseInt(document.getElementById('port').value);
         const filename = document.getElementById('filename').value || 'payload.vbs';
@@ -117,10 +117,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
-    });
+    }
     
-    // Tombol Generate Base64 Method
-    document.getElementById('generate-b64').addEventListener('click', () => {
+    function generateBase64Method() {
         const ip = document.getElementById('ip').value.trim();
         const port = parseInt(document.getElementById('port').value);
         const filename = document.getElementById('filename').value || 'payload.vbs';
@@ -143,5 +142,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             showModal('Error', `Generation failed: ${e.message}`, true);
         }
-    });
+    }
+    
+    const generateChrBtn = document.getElementById('generate-chr');
+    const generateB64Btn = document.getElementById('generate-b64');
+    
+    if (generateChrBtn) generateChrBtn.addEventListener('click', generateChrMethod);
+    if (generateB64Btn) generateB64Btn.addEventListener('click', generateBase64Method);
 });
